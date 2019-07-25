@@ -353,7 +353,8 @@ if __name__ == "__main__":
     parser.add_argument('--initlr', type=float, default=0.001, help="initial learning rate")
     parser.add_argument('--saveacc', type=str, default='', help='directory of accuracy files')
     args = parser.parse_args()
-    f=open('args.saveacc/acc_val.txt', 'a+')
+    os.mkdir(args.saveacc)
+    f=open(args.saveacc+'/acc_val.txt', 'a+')
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
     #os.environ["CUDA_VISIBLE_DEVICES"] = '0,1,2,3'
 

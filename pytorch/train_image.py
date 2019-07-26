@@ -355,7 +355,8 @@ if __name__ == "__main__":
        os.mkdir(args.saveacc)
        f=open(args.saveacc+'/acc_val.txt', 'a+')
     else:
-       os.mkdir(args.saveacc+'2')
+       if os.path.exists(args.saveacc+'2')==False:
+          os.mkdir(args.saveacc+'2')
        f=open(args.saveacc+'2/acc_val.txt', 'a+')       
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
     #os.environ["CUDA_VISIBLE_DEVICES"] = '0,1,2,3'

@@ -1,0 +1,14 @@
+Office31数据集下载路径(来自google drive)：
+https://drive.google.com/file/d/0B4IapRTv9pJ1WGZVd1VDMmhwdlE/view
+
+
+源代码github路径：
+https://github.com/astrongstorm/CDAN
+
+下载完原代码后，
+在CDAN/data/office中三个'chn...txt'的文件，打开后每一行最开始的路径最开始的'/work/xuweinan'替换成你存office31的路径
+
+
+运行代码时，要切换到CDAN/pytorch文件夹内，先运行run_CDAN_train.sh,结束后再运行run_CDAN_val.sh
+
+两个run....sh都运行完后，把整个pytorch文件夹发给我们

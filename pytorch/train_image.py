@@ -167,6 +167,7 @@ def train(config):
                     best_acc = temp_acc
                     best_model = temp_model
                 log_str = "iter: {:05d}, precision: {:.5f}".format(i, temp_acc)
+                f.write('Accuracy is:'+log_str+'\n')
                 config["out_file"].write(log_str + "\n")
                 config["out_file"].flush()
                 print(log_str)
@@ -240,7 +241,7 @@ def train(config):
                                                 prep_config["params"]["crop_size"], data_config["target"]["batch_size"],
                                                 use_gpu)
         print(cv_loss)
-
+        f.write(config["val_method"]+' Validation is:'+str(cv_loss)+'\n')
 
 
     # base_network = net_config["name"](**net_config["params"])
@@ -347,7 +348,15 @@ if __name__ == "__main__":
     parser.add_argument('--validation_method', type=str, default="Nan", choices=["Nan", "Source_Risk", "Dev_icml", "Dev"])
     parser.add_argument('--tradeoff', type=float, default=1.0, help="tradeoff lambda")
     parser.add_argument('--initlr', type=float, default=0.001, help="initial learning rate")
+    parser.add_argument('--saveacc', type=str, default='', help='directory of accuracy files')
     args = parser.parse_args()
+    
+    if args.validation_method=="Nan":
+       os.mkdir(args.saveacc)
+       f=open(args.saveacc+'/acc_val.txt', 'a+')
+    else:
+       os.mkdir(args.saveacc+'2')
+       f=open(args.saveacc+'2/acc_val.txt', 'a+')       
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
     #os.environ["CUDA_VISIBLE_DEVICES"] = '0,1,2,3'
 
@@ -418,3 +427,4 @@ if __name__ == "__main__":
     config["out_file"].write(str(config))
     config["out_file"].flush()
     train(config)
+    f.close()

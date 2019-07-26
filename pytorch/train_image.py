@@ -207,40 +207,37 @@ def train(config):
             optimizer.step()
         torch.save(best_model, osp.join(config["output_path"], "best_model.pth"))
     else:
-        base_network = torch.load(config["model_path"])
+        base_network = torch.load(config["load_module"])
         use_gpu = torch.cuda.is_available()
         if use_gpu:
             base_network = base_network.cuda()
-        for i in range(config["num_iterations"]):
-            if i % config["test_interval"] == config["test_interval"] - 1:
-                base_network.train(False)
-                temp_acc = image_classification_test(dset_loaders, \
-                                                     base_network, test_10crop=prep_config["test_10crop"])
-                temp_model = nn.Sequential(base_network)
-                if temp_acc > best_acc:
-                    best_acc = temp_acc
-                    best_model = temp_model
-                log_str = "iter: {:05d}, precision: {:.5f}".format(i, temp_acc)
-                config["out_file"].write(log_str + "\n")
-                config["out_file"].flush()
-                print(log_str)
+        base_network.train(False)
+        temp_acc = image_classification_test(dset_loaders, base_network, test_10crop=prep_config["test_10crop"])
+        temp_model = nn.Sequential(base_network)
+        if temp_acc > best_acc:
+            best_acc = temp_acc
+            best_model = temp_model
+        log_str = "iter: {:05d}, precision: {:.5f}".format(config["test_interval"], temp_acc)
+        config["out_file"].write(log_str + "\n")
+        config["out_file"].flush()
+        print(log_str)
         if config["val_method"] == "Source_Risk":
             cv_loss = source_risk.cross_validation_loss(base_network, base_network, cls_source_list,
                                                         data_config["target"]["list_path"], cls_validation_list,
-                                                        class_num, prep_config["resize_size"],
-                                                        prep_config["crop_size"], data_config["target"]["batch_size"],
+                                                        class_num, prep_config["params"]["resize_size"],
+                                                        prep_config["params"]["crop_size"], data_config["target"]["batch_size"],
                                                         use_gpu)
         elif config["val_method"] == "Dev_icml":
-            cv_loss = dev_icml.cross_validation_loss(base_network, base_network, source_list,
+            cv_loss = dev_icml.cross_validation_loss(config["load_module"], config["load_module"], source_list,
                                                      data_config["target"]["list_path"], cls_validation_list,
-                                                     class_num, prep_config["resize_size"],
-                                                     prep_config["crop_size"], data_config["target"]["batch_size"],
+                                                     class_num, prep_config["params"]["resize_size"],
+                                                     prep_config["params"]["crop_size"], data_config["target"]["batch_size"],
                                                      use_gpu)
         elif config["val_method"] == "Dev":
-            cv_loss = dev.cross_validation_loss(base_network, base_network, cls_source_list,
+            cv_loss = dev.cross_validation_loss(config["load_module"], config["load_module"], cls_source_list,
                                                 data_config["target"]["list_path"], cls_validation_list,
-                                                class_num, prep_config["resize_size"],
-                                                prep_config["crop_size"], data_config["target"]["batch_size"],
+                                                class_num, prep_config["params"]["resize_size"],
+                                                prep_config["params"]["crop_size"], data_config["target"]["batch_size"],
                                                 use_gpu)
         print(cv_loss)
 
@@ -392,8 +389,8 @@ if __name__ == "__main__":
                            "lr_param":{"lr":args.lr, "gamma":0.001, "power":0.75} }
 
     config["dataset"] = args.dset
-    config["data"] = {"source":{"list_path":args.s_dset_path, "batch_size":36}, \
-                      "target":{"list_path":args.t_dset_path, "batch_size":36}, \
+    config["data"] = {"source":{"list_path":args.s_dset_path, "batch_size":12}, \
+                      "target":{"list_path":args.t_dset_path, "batch_size":12}, \
                       "test":{"list_path":args.t_dset_path, "batch_size":4}}
 
     if config["dataset"] == "office":

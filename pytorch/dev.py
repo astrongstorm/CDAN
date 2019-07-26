@@ -56,10 +56,10 @@ def get_weight(source_feature, target_feature,
     """
     N_s, d = source_feature.shape
     N_t, _d = target_feature.shape
-    if float(N_s) / N_t > 2:
-        source_feature = random_select_src(source_feature, target_feature)
-    else:
-        source_feature = source_feature.copy()
+    # if float(N_s) / N_t > 2:
+    #     source_feature = random_select_src(source_feature, target_feature)
+    # else:
+    #     source_feature = source_feature.copy()
 
     print('num_source is {}, num_target is {}, ratio is {}\n'.format(N_s, N_t, float(N_s) / N_t))  # check the ratio
 
@@ -85,7 +85,7 @@ def get_weight(source_feature, target_feature,
         acc = np.mean((label_for_test == output).astype(np.float32))
         val_acc.append(acc)
         domain_classifiers.append(domain_classifier)
-        # print('decay is %s, val acc is %s' % (decay, acc))
+        print('decay is %s, val acc is %s' % (decay, acc))
 
     index = val_acc.index(max(val_acc))
 
@@ -213,7 +213,7 @@ def get_label_list(target_list, predict_network, resize_size, crop_size, batch_s
     """
     label_list = []
     dsets_tar = ImageList(target_list, transform=prep.image_train(resize_size=resize_size, crop_size=crop_size))
-    dset_loaders_tar = util_data.DataLoader(dsets_tar, batch_size=batch_size, shuffle=True, num_workers=4)
+    dset_loaders_tar = util_data.DataLoader(dsets_tar, batch_size=batch_size, shuffle=False, num_workers=4)
     len_train_target = len(dset_loaders_tar)
     iter_target = iter(dset_loaders_tar)
     count = 0
@@ -226,13 +226,18 @@ def get_label_list(target_list, predict_network, resize_size, crop_size, batch_s
         _, predict_score = predict_network(input_tar)
         _, predict_label = torch.max(predict_score, 1)
         for num in range(len(predict_label.cpu())):
-            label_list.append(target_list[count][:-2])
+            if target_list[count][-3] == ' ':
+                ind = -2
+            else:
+                ind = -3
+            label_list.append(target_list[count][:ind])
             label_list[count] = label_list[count] + str(predict_label[num].cpu().numpy()) + "\n"
+            print(label_list[count])
             count += 1
     return label_list
 
 
-def cross_validation_loss(feature_network, predict_network, src_cls_list, target_path, val_cls_list, class_num,
+def cross_validation_loss(feature_network_path, predict_network_path, src_cls_list, target_path, val_cls_list, class_num,
                           resize_size, crop_size, batch_size, use_gpu):
     """
     Main function for computing the CV loss
@@ -251,6 +256,8 @@ def cross_validation_loss(feature_network, predict_network, src_cls_list, target
     tar_cls_list = []
     cross_val_loss = 0
 
+    feature_network = torch.load(feature_network_path)
+    predict_network = torch.load(predict_network_path)
     # add pesudolabel for target data
     target_list = get_label_list(target_list_no_label, predict_network, resize_size, crop_size, batch_size, use_gpu)
 

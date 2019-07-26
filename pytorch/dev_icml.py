@@ -125,7 +125,7 @@ def get_label_list(target_list, predict_network_name, resize_size, crop_size, ba
     return label_list
 
 
-def cross_validation_loss(feature_network, predict_network, src_list, target_path, val_list, class_num, resize_size,
+def cross_validation_loss(feature_network_path, predict_network_path, src_list, target_path, val_list, class_num, resize_size,
                           crop_size, batch_size, use_gpu):
     """
     Main function for computing the CV loss
@@ -145,6 +145,8 @@ def cross_validation_loss(feature_network, predict_network, src_list, target_pat
     tar_list = open(target_path).readlines()
     cross_val_loss = 0
 
+    feature_network = torch.load(feature_network_path)
+    predict_network = torch.load(predict_network_path)
     prep_dict = prep.image_train(resize_size=resize_size, crop_size=crop_size)
     # load different class's image
 
